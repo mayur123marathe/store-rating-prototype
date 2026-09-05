@@ -1,0 +1,102 @@
+name: FullStack CI / CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # 1. Backend Testing & Build Pipeline
+  backend-ci:
+    name: Backend CI (Tests & Build)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgrespassword
+          POSTGRES_DB: roxiler_db_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/roxiler_db_test?schema=public
+      JWT_SECRET: github_actions_ci_secret_token_2026
+      JWT_EXPIRES_IN: 7d
+      PORT: 5000
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Backend Dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Generate Prisma Client
+        working-directory: backend
+        run: npx prisma generate
+
+      - name: Push Database Schema
+        working-directory: backend
+        run: npx prisma db push
+
+      - name: Run Automated Test Suite
+        working-directory: backend
+        run: npm test
+
+      - name: Build Backend Production Bundle
+        working-directory: backend
+        run: npm run build
+
+  # 2. Frontend Validation & Build Pipeline
+  frontend-ci:
+    name: Frontend CI (Lint & Build)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build Frontend Production Bundle
+        working-directory: frontend
+        run: npm run build
+
+  # 3. Docker Compose Configuration Validation
+  docker-validation:
+    name: Docker Configuration Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose Configuration
+        run: docker compose config

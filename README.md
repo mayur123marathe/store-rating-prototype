@@ -1,5 +1,12 @@
 # 🌟 Roxiler Store Rating & Management Platform
 
+[![CI Pipeline](https://github.com/mayur123marathe/store-rating-prototype/actions/workflows/ci.yml/badge.svg)](https://github.com/mayur123marathe/store-rating-prototype/actions/workflows/ci.yml)
+![Node.js](https://img.shields.io/badge/Node.js-22.x-green.svg)
+![React](https://img.shields.io/badge/React-18.x-blue.svg)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg)
+![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748.svg)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)
+
 A production-grade, enterprise-ready fullstack web application allowing users to submit, view, and modify store ratings (1–5 stars), with role-based authentication and dashboards for **System Administrators**, **Store Owners**, and **Normal Users**.
 
 > 📚 **Looking for Architecture, Request Flows & Viva/Interview Q&As?** Check out the comprehensive **[Architecture & Viva Guide (ARCHITECTURE_AND_VIVA_GUIDE.md)](./ARCHITECTURE_AND_VIVA_GUIDE.md)**!
@@ -8,7 +15,7 @@ Built to strictly satisfy all requirements of the **FullStack Coding Challenge**
 
 ---
 
-## 🚀 Key Highlights & "Overkill" Enhancements
+## 🚀 Key Highlights & Enhancements
 
 - 🐳 **One-Command Dockerization**: Complete container orchestration (`docker-compose up --build`) running PostgreSQL, Node.js REST API with automatic schema migrations & seeders, and Nginx React frontend.
 - ⚡ **1-Click Recruiter Demo Logins**: Instant credential-filling buttons on the login page for **Admin**, **Store Owner**, and **Normal User** with rich pre-seeded data.
