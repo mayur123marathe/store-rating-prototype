@@ -32,6 +32,16 @@ export const createApp = (): Application => {
     customSiteTitle: 'Roxiler Rating Platform API Docs',
   }));
 
+  // Root endpoint
+  app.get('/', (_req, res) => {
+    res.status(200).json({
+      status: 'online',
+      service: 'Roxiler Store Rating Platform Backend API',
+      health: '/api/health',
+      docs: '/api/docs',
+    });
+  });
+
   // Application Routes
   app.use('/api', routes);
 
