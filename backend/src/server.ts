@@ -1,8 +1,6 @@
-import { createApp } from './app';
+import app from './app';
 import { ENV } from './config/env';
 import { prisma } from './config/prisma';
-
-const app = createApp();
 
 const startServer = async () => {
   try {
