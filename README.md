@@ -9,6 +9,11 @@
 
 A production-grade, enterprise-ready fullstack web application allowing users to submit, view, and modify store ratings (1–5 stars), with role-based authentication and dashboards for **System Administrators**, **Store Owners**, and **Normal Users**.
 
+### 🌐 Live Production Deployments
+- 💻 **Live Web Application**: [https://store-rating-prototype-delta.vercel.app](https://store-rating-prototype-delta.vercel.app)
+- 🔌 **Live Backend API**: [https://store-rating-prototype-api.vercel.app](https://store-rating-prototype-api.vercel.app)
+- 📖 **Interactive Swagger Docs**: [https://store-rating-prototype-api.vercel.app/api/docs](https://store-rating-prototype-api.vercel.app/api/docs)
+
 > 📚 **Looking for Architecture, Request Flows & Viva/Interview Q&As?** Check out the comprehensive **[Architecture & Viva Guide (ARCHITECTURE_AND_VIVA_GUIDE.md)](./ARCHITECTURE_AND_VIVA_GUIDE.md)**!
 
 Built to strictly satisfy all requirements of the **FullStack Coding Challenge** with top-tier engineering practices: TypeScript across the full stack, PostgreSQL with Prisma ORM, React with Vite & Tailwind CSS, Docker multi-stage containerization, interactive Recharts analytics, and OpenAPI 3.0 / Swagger documentation.
