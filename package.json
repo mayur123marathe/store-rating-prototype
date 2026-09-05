@@ -1,0 +1,17 @@
+{
+  "name": "roxiler-store-rating-platform",
+  "version": "1.0.0",
+  "description": "Store Rating and Management Platform with Multi-Role System, Analytics, and Dockerization",
+  "scripts": {
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix backend && npm run build --prefix frontend",
+    "test": "npm run test --prefix backend",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down",
+    "seed": "npm run prisma:seed --prefix backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
