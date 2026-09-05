@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { Store, PaginationMeta } from '../../types';
 import { StarRating } from '../../components/StarRating';
 import { RatingModal } from '../../components/RatingModal';
+import { Modal } from '../../components/Modal';
 import { useAuth } from '../../context/AuthContext';
 import {
   Search,
@@ -14,10 +16,15 @@ import {
   SlidersHorizontal,
   LayoutGrid,
   List,
+  LogIn,
+  UserPlus,
+  Lock,
+  ArrowRight,
 } from 'lucide-react';
 
 export const UserStoresPage: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [stores, setStores] = useState<Store[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta>({
     total: 0,
@@ -36,6 +43,10 @@ export const UserStoresPage: React.FC = () => {
   // Rating Modal state
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+
+  // Auth Prompt Modal state for unauthenticated visitors
+  const [authPromptStore, setAuthPromptStore] = useState<Store | null>(null);
+  const [isAuthPromptOpen, setIsAuthPromptOpen] = useState(false);
 
   const fetchStores = async () => {
     try {
@@ -77,6 +88,17 @@ export const UserStoresPage: React.FC = () => {
     setIsRatingModalOpen(true);
   };
 
+  const handleCardClick = (store: Store) => {
+    if (!user) {
+      setAuthPromptStore(store);
+      setIsAuthPromptOpen(true);
+      return;
+    }
+    if (user.role === 'USER') {
+      handleOpenRatingModal(store);
+    }
+  };
+
   const handleRatingSuccess = (_storeId: string, _newRating: number) => {
     fetchStores();
   };
@@ -103,6 +125,42 @@ export const UserStoresPage: React.FC = () => {
           <StoreIcon className="w-96 h-96 text-white" />
         </div>
       </div>
+
+      {/* Guest Notice Banner (Prompts Visitors to Log In) */}
+      {!user && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-indigo-50/90 via-purple-50/90 to-blue-50/90 dark:from-slate-900/90 dark:via-indigo-950/40 dark:to-slate-900/90 border border-indigo-200/80 dark:border-indigo-800/60 shadow-sm">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-indigo-500/25">
+              <Lock className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                Sign in required to rate stores
+                <span className="text-[10px] uppercase font-extrabold tracking-wider px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300">
+                  Guest Mode
+                </span>
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                You are currently browsing as a guest. Log in or create an account to submit 1-to-5 star store ratings.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 w-full sm:w-auto flex-shrink-0">
+            <Link
+              to="/login"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm shadow-indigo-500/20 transition-all"
+            >
+              <LogIn className="w-4 h-4" /> Sign In to Rate
+            </Link>
+            <Link
+              to="/register"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-all"
+            >
+              <UserPlus className="w-4 h-4" /> Create Account
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Search, Sort, and View Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 glass-card p-4 rounded-2xl shadow-sm">
@@ -192,17 +250,18 @@ export const UserStoresPage: React.FC = () => {
           {stores.map((store) => (
             <div
               key={store.id}
-              className="glass-card rounded-2xl p-6 flex flex-col justify-between glass-card-hover shadow-sm"
+              onClick={() => handleCardClick(store)}
+              className="glass-card rounded-2xl p-6 flex flex-col justify-between glass-card-hover cursor-pointer shadow-sm group transition-all"
             >
               <div className="space-y-4">
                 {/* Store Header */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-500/15 to-purple-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-500/20 flex-shrink-0">
+                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-500/15 to-purple-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-500/20 flex-shrink-0 group-hover:scale-105 transition-transform">
                       <StoreIcon className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 leading-snug">
+                      <h3 className="font-bold text-base text-slate-900 dark:text-slate-100 leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                         {store.name}
                       </h3>
                       <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">
@@ -254,13 +313,31 @@ export const UserStoresPage: React.FC = () => {
                     )}
                   </div>
                 )}
+
+                {/* Guest Callout Badge */}
+                {!user && (
+                  <div className="pt-1">
+                    <div className="px-3 py-2 rounded-xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-300 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <Lock className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                        Sign in to rate this store
+                      </span>
+                      <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 group-hover:underline flex items-center gap-0.5">
+                        Rate <ArrowRight className="w-3 h-3" />
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Action Button */}
+              {/* Action Buttons */}
               {user?.role === 'USER' && (
                 <div className="pt-5 mt-4 border-t border-slate-100 dark:border-slate-800">
                   <button
-                    onClick={() => handleOpenRatingModal(store)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenRatingModal(store);
+                    }}
                     className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all shadow-sm ${
                       store.userRating
                         ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
@@ -281,6 +358,44 @@ export const UserStoresPage: React.FC = () => {
                   </button>
                 </div>
               )}
+
+              {!user && (
+                <div className="pt-5 mt-4 border-t border-slate-100 dark:border-slate-800">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setAuthPromptStore(store);
+                      setIsAuthPromptOpen(true);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all shadow-sm bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-indigo-500/20 group-hover:shadow-md"
+                  >
+                    <LogIn className="w-3.5 h-3.5" />
+                    Sign in to Rate Store
+                  </button>
+                </div>
+              )}
+
+              {user?.role === 'ADMIN' && (
+                <div className="pt-5 mt-4 border-t border-slate-100 dark:border-slate-800">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate('/admin/stores');
+                    }}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    Manage Store in Admin Portal &rarr;
+                  </button>
+                </div>
+              )}
+
+              {user?.role === 'STORE_OWNER' && (
+                <div className="pt-5 mt-4 border-t border-slate-100 dark:border-slate-800 text-center">
+                  <span className="text-xs text-slate-400 italic">
+                    Store Owner Mode (Ratings submitted by users)
+                  </span>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -294,12 +409,16 @@ export const UserStoresPage: React.FC = () => {
                 <th className="px-4 py-3.5">Address</th>
                 <th className="px-4 py-3.5">Overall Rating</th>
                 {user?.role === 'USER' && <th className="px-4 py-3.5">Your Rating</th>}
-                {user?.role === 'USER' && <th className="px-4 py-3.5 text-right">Action</th>}
+                <th className="px-4 py-3.5 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {stores.map((store) => (
-                <tr key={store.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
+                <tr
+                  key={store.id}
+                  onClick={() => handleCardClick(store)}
+                  className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
+                >
                   <td className="px-4 py-3.5">
                     <p className="font-semibold text-slate-900 dark:text-slate-100">{store.name}</p>
                     <p className="text-xs text-slate-500 font-mono">{store.email}</p>
@@ -325,16 +444,35 @@ export const UserStoresPage: React.FC = () => {
                       )}
                     </td>
                   )}
-                  {user?.role === 'USER' && (
-                    <td className="px-4 py-3.5 text-right">
+                  <td className="px-4 py-3.5 text-right">
+                    {user?.role === 'USER' ? (
                       <button
-                        onClick={() => handleOpenRatingModal(store)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenRatingModal(store);
+                        }}
                         className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 transition-colors"
                       >
                         {store.userRating ? 'Modify' : 'Rate'}
                       </button>
-                    </td>
-                  )}
+                    ) : !user ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setAuthPromptStore(store);
+                          setIsAuthPromptOpen(true);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm shadow-indigo-500/20 transition-all"
+                      >
+                        <LogIn className="w-3.5 h-3.5" />
+                        Sign in to Rate
+                      </button>
+                    ) : (
+                      <span className="text-xs text-slate-400">
+                        {user.role === 'ADMIN' ? 'Admin' : 'Owner'}
+                      </span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -367,13 +505,69 @@ export const UserStoresPage: React.FC = () => {
         </div>
       )}
 
-      {/* Interactive Rating Modal */}
+      {/* Interactive Rating Modal for Authenticated Users */}
       <RatingModal
         isOpen={isRatingModalOpen}
         onClose={() => setIsRatingModalOpen(false)}
         store={selectedStore}
         onRatingSuccess={handleRatingSuccess}
       />
+
+      {/* Auth Prompt Modal for Unauthenticated Visitors */}
+      <Modal
+        isOpen={isAuthPromptOpen}
+        onClose={() => setIsAuthPromptOpen(false)}
+        title="Sign In Required"
+        maxWidth="sm"
+      >
+        <div className="space-y-5 text-center">
+          <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-500/30 shadow-inner">
+            <Lock className="w-7 h-7" />
+          </div>
+
+          <div className="space-y-1.5">
+            <h4 className="text-base font-bold text-slate-900 dark:text-slate-100">
+              Want to rate {authPromptStore ? `"${authPromptStore.name}"` : 'this store'}?
+            </h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Only logged-in normal users can submit and modify 1-to-5 star store ratings. Please log in or register to share your rating.
+            </p>
+          </div>
+
+          {/* Recruiter / Reviewer Fast-Track Hint */}
+          <div className="p-3.5 rounded-xl bg-gradient-to-r from-indigo-50/80 to-purple-50/80 dark:from-slate-800/80 dark:to-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 text-left text-xs space-y-1">
+            <div className="flex items-center gap-1.5 font-bold text-indigo-700 dark:text-indigo-300">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
+              <span>1-Click Demo Available!</span>
+            </div>
+            <p className="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
+              The login page features a 1-click test button for normal users so you can test rating immediately without typing.
+            </p>
+          </div>
+
+          {/* Action CTAs */}
+          <div className="space-y-2 pt-1">
+            <button
+              onClick={() => {
+                setIsAuthPromptOpen(false);
+                navigate('/login');
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/25 transition-all"
+            >
+              <LogIn className="w-4 h-4" /> Go to Sign In
+            </button>
+            <button
+              onClick={() => {
+                setIsAuthPromptOpen(false);
+                navigate('/register');
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors"
+            >
+              <UserPlus className="w-4 h-4" /> Create New Account
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
